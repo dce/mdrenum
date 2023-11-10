@@ -3,6 +3,8 @@
     "build": "bun build src/mdrenum.ts --compile --outfile bin/mdrenum"
   },
   "dependencies": {
-    "mdast-util-from-markdown": "^2.0.0"
+    "@types/node": "^20.9.0",
+    "mdast-util-from-markdown": "^2.0.0",
+    "mdast-util-to-markdown": "^2.1.0"
   }
 }

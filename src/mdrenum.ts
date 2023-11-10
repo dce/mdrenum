@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises'
 import {fromMarkdown} from 'mdast-util-from-markdown'
+import {toMarkdown} from 'mdast-util-to-markdown'
 import {Node, Parent, LinkReference} from 'mdast'
 
 const doc = await fs.readFile('test.md')
@@ -30,3 +31,5 @@ findLinks(tree).forEach(function(link) {
     console.log(content.substring(link.position.start.offset, link.position.end.offset))
   }
 })
+
+console.log(toMarkdown(tree))
