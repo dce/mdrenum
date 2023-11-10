@@ -1,0 +1,8 @@
+{
+  "scripts": {
+    "build": "bun build src/mdrenum.ts --compile --outfile bin/mdrenum"
+  },
+  "dependencies": {
+    "mdast-util-from-markdown": "^2.0.0"
+  }
+}
