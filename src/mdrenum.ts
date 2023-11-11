@@ -32,18 +32,25 @@ function findNodes(node: Node): LinkNode[] {
 
 function buildRefMap(nodes: LinkNode[]): RefMap {
   let index = 1
+  let refMap = {}
 
-  return nodes.reduce(
-    function (dict, link) {
-      if (!dict[link.identifier]) {
-        dict[link.identifier] = index
-        index++
+  nodes.forEach(
+    function (node) {
+      if (node.type == 'linkReference' && !refMap[node.identifier]) {
+        refMap[node.identifier] = index++
       }
-
-      return dict
-    },
-    {}
+    }
   )
+
+  nodes.forEach(
+    function (node) {
+      if (node.type == 'definition' && !refMap[node.identifier]) {
+        refMap[node.identifier] = index++
+      }
+    }
+  )
+
+  return refMap
 }
 
 function updateContent(nodes: LinkNode[], refMap: RefMap, content: string): string {
