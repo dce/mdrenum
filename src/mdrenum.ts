@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import {globSync} from 'glob'
 import {fromMarkdown} from 'mdast-util-from-markdown'
-import {Node, Parent, LinkReference, Definition} from 'mdast'
+import {Definition, LinkReference, Node, Parent} from 'mdast'
 
 interface RefMap {
   [index: string]: number
@@ -36,7 +36,7 @@ function buildRefMap(nodes: LinkNode[]): RefMap {
 
   nodes.forEach(
     function (node) {
-      if (node.type == 'linkReference' && !refMap[node.identifier]) {
+      if (node.type === 'linkReference' && refMap[node.identifier] === undefined) {
         refMap[node.identifier] = index++
       }
     }
@@ -44,7 +44,7 @@ function buildRefMap(nodes: LinkNode[]): RefMap {
 
   nodes.forEach(
     function (node) {
-      if (node.type == 'definition' && !refMap[node.identifier]) {
+      if (node.type === 'definition' && refMap[node.identifier] === undefined ) {
         refMap[node.identifier] = index++
       }
     }
@@ -58,14 +58,14 @@ function updateContent(nodes: LinkNode[], refMap: RefMap, content: string): stri
 
   return nodes.reduce(
     function(str, node) {
-      if (node.position == undefined) {
+      if (node.position === undefined) {
         return str
       }
 
       let start = node.position.start.offset
       let end = node.position.end.offset
 
-      if (start == undefined || end == undefined) {
+      if (start === undefined || end === undefined) {
         return str
       }
 
@@ -75,7 +75,7 @@ function updateContent(nodes: LinkNode[], refMap: RefMap, content: string): stri
       const nodeContent = str.substring(start, end)
       let matcher = new RegExp(`\\[${node.identifier}\\]$`)
 
-      if (node.type == "definition") {
+      if (node.type === "definition") {
         matcher = new RegExp(`^\\[${node.identifier}\\]`)
       }
 
