@@ -72,14 +72,14 @@ function updateContent(nodes: LinkNode[], refMap: RefMap, content: string): stri
       start += offset
       end += offset
 
-      let nodeContent = str.substring(start, end)
+      const nodeContent = str.substring(start, end)
       let matcher = new RegExp(`\\[${node.identifier}\\]$`)
 
       if (node.type == "definition") {
         matcher = new RegExp(`^\\[${node.identifier}\\]`)
       }
 
-      let updatedContent = nodeContent.replace(matcher, `[${refMap[node.identifier]}]`)
+      const updatedContent = nodeContent.replace(matcher, `[${refMap[node.identifier]}]`)
 
       offset += updatedContent.length - nodeContent.length
 
@@ -89,7 +89,21 @@ function updateContent(nodes: LinkNode[], refMap: RefMap, content: string): stri
   )
 }
 
+function fixDocument(content: string): string {
+  const tree = fromMarkdown(content)
+  const nodes = findNodes(tree)
+  const refMap = buildRefMap(nodes)
+  return updateContent(nodes, refMap, content)
+}
+
 let files = process.argv.slice(2)
+
+if (files[0] === "--stdin") {
+  const updated = fixDocument(fs.readFileSync(process.stdin.fd).toString())
+  process.stdout.write(updated)
+  process.exit()
+}
+
 let fix = false
 let failed = false
 
@@ -103,12 +117,8 @@ if (files.length === 0) {
 }
 
 files.forEach(function(file) {
-  const content= fs.readFileSync(file).toString()
-  const tree = fromMarkdown(content)
-
-  const nodes = findNodes(tree)
-  const refMap = buildRefMap(nodes)
-  const updated = updateContent(nodes, refMap, content)
+  const content = fs.readFileSync(file).toString()
+  const updated = fixDocument(content)
 
   if (content !== updated) {
     console.error(`Links in ${file} are not in order`)
