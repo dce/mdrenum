@@ -1,4 +1,4 @@
-import fs from 'node:fs'
+import {readFileSync, writeFileSync} from 'node:fs'
 import {globSync} from 'glob'
 import {fromMarkdown} from 'mdast-util-from-markdown'
 import {Definition, LinkReference, Node, Parent} from 'mdast'
@@ -32,7 +32,7 @@ function findNodes(node: Node): LinkNode[] {
 
 function buildRefMap(nodes: LinkNode[]): RefMap {
   let index = 1
-  let refMap = {}
+  let refMap: RefMap = {}
 
   nodes.forEach(
     function (node) {
@@ -99,7 +99,7 @@ function fixDocument(content: string): string {
 let files = process.argv.slice(2)
 
 if (files[0] === "--stdin") {
-  const updated = fixDocument(fs.readFileSync(process.stdin.fd).toString())
+  const updated = fixDocument(readFileSync(process.stdin.fd).toString())
   process.stdout.write(updated)
   process.exit()
 }
@@ -117,7 +117,7 @@ if (files.length === 0) {
 }
 
 files.forEach(function(file) {
-  const content = fs.readFileSync(file).toString()
+  const content = readFileSync(file).toString()
   const updated = fixDocument(content)
 
   if (content !== updated) {
@@ -125,7 +125,7 @@ files.forEach(function(file) {
     failed = true
 
     if (fix) {
-      fs.writeFileSync(file, updated)
+      writeFileSync(file, updated)
     }
   }
 })
