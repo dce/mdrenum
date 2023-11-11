@@ -1,4 +1,4 @@
-import {fixDocument} from './mdrenum'
+import {renumberLinks} from './mdrenum'
 
 let TEST_CASES = [
 	[
@@ -142,7 +142,7 @@ function trim(content: string): string {
 for (let i = 0; i < TEST_CASES.length; i++) {
   test(`Case #${i+1}`, () => {
     let expected = trim(TEST_CASES[i][1])
-    let actual = fixDocument(trim(TEST_CASES[i][0]))
+    let actual = renumberLinks(trim(TEST_CASES[i][0]))
 
     expect(actual).toBe(expected)
   })

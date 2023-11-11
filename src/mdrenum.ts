@@ -87,7 +87,7 @@ function updateContent(nodes: LinkNode[], refMap: RefMap, content: string): stri
   )
 }
 
-export function fixDocument(content: string): string {
+export function renumberLinks(content: string): string {
   const tree = fromMarkdown(content)
   const nodes = findNodes(tree)
   const refMap = buildRefMap(nodes)

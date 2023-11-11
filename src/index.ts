@@ -1,11 +1,11 @@
 import {readFileSync, writeFileSync} from 'node:fs'
 import {globSync} from 'glob'
-import {fixDocument} from './mdrenum'
+import {renumberLinks} from './mdrenum'
 
 let files = process.argv.slice(2)
 
 if (files[0] === "--stdin") {
-  const updated = fixDocument(readFileSync(process.stdin.fd).toString())
+  const updated = renumberLinks(readFileSync(process.stdin.fd).toString())
   process.stdout.write(updated)
   process.exit()
 }
@@ -24,7 +24,7 @@ if (files.length === 0) {
 
 files.forEach(function(file) {
   const content = readFileSync(file).toString()
-  const updated = fixDocument(content)
+  const updated = renumberLinks(content)
 
   if (content !== updated) {
     console.error(`Links in ${file} are not in order`)
