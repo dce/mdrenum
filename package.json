@@ -4,7 +4,7 @@
   },
   "dependencies": {
     "@types/node": "^20.9.0",
-    "mdast-util-from-markdown": "^2.0.0",
-    "mdast-util-to-markdown": "^2.1.0"
+    "glob": "^10.3.10",
+    "mdast-util-from-markdown": "^2.0.0"
   }
 }
