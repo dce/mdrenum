@@ -5,8 +5,15 @@ import {renumberLinks} from './mdrenum'
 let files = process.argv.slice(2)
 
 if (files[0] === "--stdin") {
-  const updated = renumberLinks(readFileSync(process.stdin.fd).toString())
-  process.stdout.write(updated)
+  const content = readFileSync(process.stdin.fd).toString()
+  const [updated, error] = renumberLinks(content)
+
+  if (error === null) {
+    process.stdout.write(updated)
+  } else {
+    process.stdout.write(content)
+  }
+
   process.exit()
 }
 
@@ -24,9 +31,12 @@ if (files.length === 0) {
 
 files.forEach(function(file) {
   const content = readFileSync(file).toString()
-  const updated = renumberLinks(content)
+  const [updated, error] = renumberLinks(content)
 
-  if (content !== updated) {
+  if (error !== null) {
+    console.error(`Error in ${file}: ${error}`)
+    failed = true
+  } else if (content !== updated) {
     console.error(`Links in ${file} are not in order`)
     failed = true
 

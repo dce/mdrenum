@@ -29,6 +29,25 @@ function findNodes(node: Node): LinkNode[] {
   return []
 }
 
+function dupDefinitions(nodes: LinkNode[]): boolean {
+  let refMap: RefMap = {}
+  let dup = false
+
+  nodes.forEach(
+    function (node) {
+      if (node.type === 'definition') {
+        if (refMap[node.identifier] !== undefined) {
+          dup = true
+        }
+
+        refMap[node.identifier] = 0
+      }
+    }
+  )
+
+  return dup
+}
+
 function buildRefMap(nodes: LinkNode[]): RefMap {
   let index = 1
   let refMap: RefMap = {}
@@ -153,10 +172,20 @@ function sortDefinitions(content: string): string {
   return newContent
 }
 
-export function renumberLinks(content: string): string {
+export function renumberLinks(content: string): [string, string | null] {
   const tree = fromMarkdown(content)
   const nodes = findNodes(tree)
+
+  if (dupDefinitions(nodes)) {
+    return ["", "duplicate definition detected"]
+  }
+
   const refMap = buildRefMap(nodes)
   const updated = updateContent(nodes, refMap, content)
-  return sortDefinitions(updated)
+
+  if (nodes.length !== findNodes(fromMarkdown(updated)).length) {
+    return ["", "undefined link detected"]
+  }
+
+  return [sortDefinitions(updated), null]
 }
