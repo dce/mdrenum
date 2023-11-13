@@ -71,7 +71,7 @@ function buildRefMap(nodes: LinkNode[]): RefMap {
   return refMap
 }
 
-function updateContent(nodes: LinkNode[], refMap: RefMap, content: string): string {
+function updateLinkNumbers(nodes: LinkNode[], refMap: RefMap, content: string): string {
   let offset = 0
 
   return nodes.reduce(
@@ -93,7 +93,6 @@ function updateContent(nodes: LinkNode[], refMap: RefMap, content: string): stri
       }
 
       const updatedContent = nodeContent.replace(matcher, `[${refMap[node.identifier]}]`)
-
       offset += updatedContent.length - nodeContent.length
 
       return str.substring(0, start) + updatedContent + str.substring(end)
@@ -181,7 +180,7 @@ export function renumberLinks(content: string): [string, string | null] {
   }
 
   const refMap = buildRefMap(nodes)
-  const updated = updateContent(nodes, refMap, content)
+  const updated = updateLinkNumbers(nodes, refMap, content)
 
   if (nodes.length !== findNodes(fromMarkdown(updated)).length) {
     return ["", "undefined link detected"]
