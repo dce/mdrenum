@@ -133,6 +133,24 @@ let TEST_CASES = [
 
 		[3]: https://altavista.com`,
 	],
+	[
+		`A [link][3]. Another [link][2].
+
+		[2]: https://google.com
+		[3]: https://yahoo.com
+
+		* [A link list][1]
+
+		[1]: https://altavista.com`,
+		`A [link][1]. Another [link][2].
+
+		[1]: https://yahoo.com
+		[2]: https://google.com
+
+		* [A link list][3]
+
+		[3]: https://altavista.com`,
+	],
 ]
 
 function trim(content: string): string {

@@ -1,5 +1,6 @@
 import {fromMarkdown} from 'mdast-util-from-markdown'
-import {Definition, LinkReference, Node, Parent} from 'mdast'
+import {Definition, LinkReference, Node, Parent, Root} from 'mdast'
+import invariant from 'tiny-invariant'
 
 interface RefMap {
   [index: string]: number
@@ -56,20 +57,15 @@ function updateContent(nodes: LinkNode[], refMap: RefMap, content: string): stri
 
   return nodes.reduce(
     function(str, node) {
-      if (node.position === undefined) {
-        return str
-      }
+      invariant(
+        node.position !== undefined &&
+          node.position.start.offset !== undefined &&
+          node.position.end.offset !== undefined,
+        "Expected node to have position with offsets"
+      )
 
-      let start = node.position.start.offset
-      let end = node.position.end.offset
-
-      if (start === undefined || end === undefined) {
-        return str
-      }
-
-      start += offset
-      end += offset
-
+      const start = node.position.start.offset + offset
+      const end = node.position.end.offset + offset
       const nodeContent = str.substring(start, end)
       let matcher = new RegExp(`\\[${node.identifier}\\]$`)
 
@@ -87,9 +83,80 @@ function updateContent(nodes: LinkNode[], refMap: RefMap, content: string): stri
   )
 }
 
+function findDefinitionGroups(tree: Root): Definition[][] {
+  let groups: Definition[][] = []
+  let current: Definition[] = []
+
+  tree.children.forEach(function(node) {
+    if (node.type == 'definition' && node.identifier.match(/^\d+$/)) {
+      current.push(node)
+    } else if (current.length > 0) {
+      groups.push(current)
+      current = []
+    }
+  })
+
+  if (current.length > 0) {
+    groups.push(current)
+  }
+
+  return groups
+}
+
+function sortDefinitions(content: string): string {
+  const tree = fromMarkdown(content)
+  const groups = findDefinitionGroups(tree)
+  let newContent = content
+  let offset = 0
+
+  groups.forEach(function(group) {
+    const sorted = group.slice(0).sort(function(d1, d2) {
+      return Number(d1.identifier) - Number(d2.identifier)
+    })
+
+    for (let i = 0; i < group.length; i++) {
+      const oldDef = group[i]
+      const newDef = sorted[i]
+
+      invariant(
+        oldDef.position !== undefined &&
+          oldDef.position.start.offset !== undefined &&
+          oldDef.position.end.offset !== undefined,
+        "Expected node to have position with offsets"
+      )
+
+      invariant(
+        newDef.position !== undefined &&
+          newDef.position.start.offset !== undefined &&
+          newDef.position.end.offset !== undefined,
+        "Expected node to have position with offsets"
+      )
+
+      const oldDefStr = content.substring(
+        oldDef.position.start.offset,
+        oldDef.position.end.offset
+      )
+
+      const newDefStr = content.substring(
+        newDef.position.start.offset,
+        newDef.position.end.offset
+      )
+
+      const start = oldDef.position.start.offset + offset
+      const end = oldDef.position.end.offset + offset
+
+      newContent = newContent.substring(0, start) + newDefStr + newContent.substring(end)
+      offset += newDefStr.length - oldDefStr.length
+    }
+  })
+
+  return newContent
+}
+
 export function renumberLinks(content: string): string {
   const tree = fromMarkdown(content)
   const nodes = findNodes(tree)
   const refMap = buildRefMap(nodes)
-  return updateContent(nodes, refMap, content)
+  const updated = updateContent(nodes, refMap, content)
+  return sortDefinitions(updated)
 }
