@@ -172,8 +172,7 @@ function sortDefinitions(content: string): string {
 }
 
 export function renumberLinks(content: string): [string, string | null] {
-  const tree = fromMarkdown(content)
-  const nodes = findNodes(tree)
+  const nodes = findNodes(fromMarkdown(content))
 
   if (dupDefinitions(nodes)) {
     return ["", "duplicate definition detected"]
