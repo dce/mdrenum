@@ -80,7 +80,7 @@ function updateLinkNumbers(nodes: LinkNode[], refMap: RefMap, content: string): 
         node.position !== undefined &&
           node.position.start.offset !== undefined &&
           node.position.end.offset !== undefined,
-        "Expected node to have position with offsets"
+        'Expected node to have position with offsets'
       )
 
       const start = node.position.start.offset + offset
@@ -88,7 +88,7 @@ function updateLinkNumbers(nodes: LinkNode[], refMap: RefMap, content: string): 
       const nodeContent = str.substring(start, end)
       let matcher = new RegExp(`\\[${node.identifier}\\]$`)
 
-      if (node.type === "definition") {
+      if (node.type === 'definition') {
         matcher = new RegExp(`^\\[${node.identifier}\\]`)
       }
 
@@ -140,14 +140,14 @@ function sortDefinitions(content: string): string {
         oldDef.position !== undefined &&
           oldDef.position.start.offset !== undefined &&
           oldDef.position.end.offset !== undefined,
-        "Expected node to have position with offsets"
+        'Expected node to have position with offsets'
       )
 
       invariant(
         newDef.position !== undefined &&
           newDef.position.start.offset !== undefined &&
           newDef.position.end.offset !== undefined,
-        "Expected node to have position with offsets"
+        'Expected node to have position with offsets'
       )
 
       const oldDefStr = content.substring(
@@ -175,14 +175,14 @@ export function renumberLinks(content: string): [string, string | null] {
   const nodes = findNodes(fromMarkdown(content))
 
   if (dupDefinitions(nodes)) {
-    return ["", "duplicate definition detected"]
+    return ['', 'duplicate definition detected']
   }
 
   const refMap = buildRefMap(nodes)
   const updated = updateLinkNumbers(nodes, refMap, content)
 
   if (nodes.length !== findNodes(fromMarkdown(updated)).length) {
-    return ["", "undefined link detected"]
+    return ['', 'undefined link detected']
   }
 
   return [sortDefinitions(updated), null]

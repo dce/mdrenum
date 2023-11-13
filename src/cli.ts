@@ -4,7 +4,7 @@ import {renumberLinks} from './mdrenum.ts'
 
 let files = process.argv.slice(2)
 
-if (files[0] === "--stdin") {
+if (files[0] === '--stdin') {
   const content = readFileSync(process.stdin.fd).toString()
   const [updated, error] = renumberLinks(content)
 
@@ -20,7 +20,7 @@ if (files[0] === "--stdin") {
 let fix = false
 let failed = false
 
-if (files[0] === "--fix") {
+if (files[0] === '--fix') {
   fix = true
   files.shift()
 }

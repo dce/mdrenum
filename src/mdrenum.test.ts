@@ -84,22 +84,22 @@ let TEST_CASES = [
 		[2]: https://yahoo.com`,
 	],
 	[
-		"A [link][2]. Another [link][1].\n" +
-			"\n" +
-			"```ruby\n" +
-			"foo = arr[1]\n" +
-			"```\n" +
-			"\n" +
-			"[2]: https://google.com\n" +
-			"[1]: https://yahoo.com\n",
-		"A [link][1]. Another [link][2].\n" +
-			"\n" +
-			"```ruby\n" +
-			"foo = arr[1]\n" +
-			"```\n" +
-			"\n" +
-			"[1]: https://google.com\n" +
-			"[2]: https://yahoo.com\n",
+		'A [link][2]. Another [link][1].\n' +
+			'\n' +
+			'```ruby\n' +
+			'foo = arr[1]\n' +
+			'```\n' +
+			'\n' +
+			'[2]: https://google.com\n' +
+			'[1]: https://yahoo.com\n',
+		'A [link][1]. Another [link][2].\n' +
+			'\n' +
+			'```ruby\n' +
+			'foo = arr[1]\n' +
+			'```\n' +
+			'\n' +
+			'[1]: https://google.com\n' +
+			'[2]: https://yahoo.com\n',
 	],
 	[
 		`A [link][2]. Another [link][1].
@@ -184,23 +184,23 @@ for (let i = 0; i < TEST_CASES.length; i++) {
   })
 }
 
-test("Undefined link", () => {
+test('Undefined link', () => {
 	let [updated, error] = renumberLinks(trim(
 		`[Link #1][1] [Link #2][2]
 
 		[2]: https://link.com`))
 
-	expect(updated).toBe("")
-	expect(error).toBe("undefined link detected")
+	expect(updated).toBe('')
+	expect(error).toBe('undefined link detected')
 })
 
-test("Duplicate definition", () => {
+test('Duplicate definition', () => {
 	let [updated, error] = renumberLinks(trim(
 		`[Link #1][2] [Link #2][2]
 
 		[2]: https://link1.com
 		[2]: https://link2.com`))
 
-	expect(updated).toBe("")
-	expect(error).toBe("duplicate definition detected")
+	expect(updated).toBe('')
+	expect(error).toBe('duplicate definition detected')
 })
