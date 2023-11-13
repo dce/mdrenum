@@ -1,6 +1,6 @@
 import {readFileSync, writeFileSync} from 'node:fs'
 import {globSync} from 'glob'
-import {renumberLinks} from './mdrenum'
+import {renumberLinks} from './mdrenum.ts'
 
 let files = process.argv.slice(2)
 

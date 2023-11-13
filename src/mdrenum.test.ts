@@ -1,4 +1,4 @@
-import {renumberLinks} from './mdrenum'
+import {renumberLinks} from './mdrenum.ts'
 
 let TEST_CASES = [
 	[
