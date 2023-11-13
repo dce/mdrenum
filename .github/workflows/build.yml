@@ -1,0 +1,23 @@
+name: Build
+on: push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Bun 1.0.1.1
+        uses: oven-sh/setup-bun@v1
+        with:
+          version: 1.0.1.1
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Run tests
+        run: bun test
+
+      - name: Check types and compile
+        run: bun run build
