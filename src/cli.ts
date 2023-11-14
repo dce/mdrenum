@@ -29,7 +29,7 @@ if (files.length === 0) {
   files = globSync('**/*.md')
 }
 
-files.forEach(function(file) {
+files.forEach(function (file) {
   const content = readFileSync(file).toString()
   const [updated, error] = renumberLinks(content)
 
