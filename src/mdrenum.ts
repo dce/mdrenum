@@ -175,6 +175,10 @@ function sortDefinitions(content: string): string {
 export function renumberLinks(content: string): [string, string | null] {
   const nodes = findNodes(fromMarkdown(content))
 
+  if (process.env.DEBUG !== undefined) {
+    console.log(nodes)
+  }
+
   if (dupDefinitions(nodes)) {
     return ['', 'duplicate definition detected']
   }
