@@ -40,10 +40,17 @@ Here's another [link][3].
 
 ## Usage
 
-* `mdrenum`: find all `.md` files in the current directory and all subdirectories and log files with unordered links to standard error
-* `mdrenum file1.md file2.md`: check only the named files
-* `mdrenum --fix [files]`: update files to put links in sequential order
-* `mdrenum --stdin`: read Markdown content from standard input, write updated file to standard output
+```
+Usage: mdrenum [options] [files...]
+
+Arguments:
+  files        files to scan (default: .md files in current directory + subdirectories)
+
+Options:
+  -s, --stdin  read content from STDIN, write to STDOUT (default: false)
+  -f, --fix    update files to put links in sequential order (default: false)
+  -h, --help   display help for command
+```
 
 ## Caveats
 

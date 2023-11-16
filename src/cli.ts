@@ -1,10 +1,9 @@
+import {Command} from 'commander'
 import {readFileSync, writeFileSync} from 'node:fs'
 import {globSync} from 'glob'
 import {renumberLinks} from './mdrenum.ts'
 
-let files = process.argv.slice(2)
-
-if (files[0] === '--stdin') {
+function processStdin() {
   const content = readFileSync(process.stdin.fd).toString()
   const [updated, error] = renumberLinks(content)
 
@@ -13,39 +12,52 @@ if (files[0] === '--stdin') {
   } else {
     process.stdout.write(content)
   }
-
-  process.exit()
 }
 
-let fix = false
-let failed = false
+function processFiles(files: string[], fix: boolean): boolean {
+  let success = true
 
-if (files[0] === '--fix') {
-  fix = true
-  files.shift()
-}
+  files.forEach(function (file) {
+    const content = readFileSync(file).toString()
+    const [updated, error] = renumberLinks(content)
 
-if (files.length === 0) {
-  files = globSync('**/*.md')
-}
+    if (error !== null) {
+      console.error(`Error in ${file}: ${error}`)
+      success = false
+    } else if (content !== updated) {
+      console.error(`Links in ${file} are not in order`)
+      success = false
 
-files.forEach(function (file) {
-  const content = readFileSync(file).toString()
-  const [updated, error] = renumberLinks(content)
-
-  if (error !== null) {
-    console.error(`Error in ${file}: ${error}`)
-    failed = true
-  } else if (content !== updated) {
-    console.error(`Links in ${file} are not in order`)
-    failed = true
-
-    if (fix) {
-      writeFileSync(file, updated)
+      if (fix) {
+        writeFileSync(file, updated)
+      }
     }
-  }
-})
+  })
 
-if (failed) {
-  process.exit(1)
+  return success
 }
+
+let program = new Command()
+
+program
+  .argument(
+    '[files...]',
+    'files to scan (default: .md files in current directory + subdirectories)'
+  )
+  .option('-s, --stdin', 'read content from STDIN, write to STDOUT', false)
+  .option('-f, --fix', 'update files to put links in sequential order', false)
+  .action(function (files, opts) {
+    if (opts.stdin) {
+      processStdin()
+      process.exit()
+    }
+
+    if (files.length === 0) {
+      files = globSync('**/*.md')
+    }
+
+    if (processFiles(files, opts.fix) === false) {
+      process.exit(1)
+    }
+  })
+  .parse()
