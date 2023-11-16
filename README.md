@@ -73,8 +73,8 @@ To instruct Helix to automatically renumber links on save, add the following to 
 ```toml
 [[language]]
 name = "markdown"
-formatter = { command = "mdrenum" , args = ["--stdin"] }
 auto-format = true
+formatter = { command = "mdrenum" , args = ["--stdin"] }
 ```
 
 [2]: https://helix-editor.com/
