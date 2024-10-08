@@ -1,0 +1,25 @@
+image: ubuntu/24.04
+packages:
+  - unzip
+sources:
+  - https://git.sr.ht/~dce/mdrenum
+environment:
+  BUN_VERSION: 1.0.11
+triggers:
+  - action: email
+    condition: failure
+    to: david@davideisinger.com
+tasks:
+  - setup: |
+      curl -fsSL https://bun.sh/install | bash -s "bun-v$BUN_VERSION"
+      echo 'BUN_INSTALL="$HOME/.bun"' >> ~/.buildenv
+      echo 'PATH="$BUN_INSTALL/bin:$PATH"' >> ~/.buildenv
+      echo 'cd mdrenum' >> ~/.buildenv
+  - deps: |
+      bun install
+  - lint: |
+      bun run prettier -c src
+  - test: |
+      bun test
+  - compile: |
+      bun run build
