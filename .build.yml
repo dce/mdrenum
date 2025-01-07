@@ -4,7 +4,7 @@ packages:
 sources:
   - https://git.sr.ht/~dce/mdrenum
 environment:
-  BUN_VERSION: 1.0.11
+  BUN_VERSION: 1.1.42
 triggers:
   - action: email
     condition: failure
