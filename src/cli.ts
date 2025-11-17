@@ -2,6 +2,7 @@ import {Command} from 'commander'
 import {readFileSync, writeFileSync} from 'node:fs'
 import {globSync} from 'glob'
 import {renumberLinks} from './mdrenum.ts'
+import pkg from '../package.json' assert {type: 'json'}
 
 function processStdin() {
   const content = readFileSync(process.stdin.fd).toString()
@@ -40,6 +41,8 @@ function processFiles(files: string[], fix: boolean): boolean {
 let program = new Command()
 
 program
+  .name('mdrenum')
+  .version(pkg.version)
   .argument(
     '[files...]',
     'files to scan (default: .md files in current directory + subdirectories)'

@@ -1,4 +1,6 @@
 {
+  "name": "mdrenum",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "build": "tsc && bun build src/cli.ts --compile --minify --outfile bin/mdrenum"

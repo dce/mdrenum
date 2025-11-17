@@ -1,0 +1,173 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            os_slug: linux
+            arch_slug: x64
+          - runner: ubuntu-24.04
+            os_slug: linux
+            arch_slug: arm64
+          - runner: macos-13
+            os_slug: macos
+            arch_slug: x64
+          - runner: macos-14
+            os_slug: macos
+            arch_slug: arm64
+    runs-on: ${{ matrix.runner }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.2
+
+      - name: Verify tag matches package.json version
+        id: verify
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG_NAME="${GITHUB_REF_NAME:-${GITHUB_REF##*/}}"
+          PKG_VERSION=$(node -e "console.log(JSON.parse(require('fs').readFileSync('package.json','utf8')).version)")
+          echo "Tag: $TAG_NAME"
+          echo "package.json version: $PKG_VERSION"
+          if [ "v$PKG_VERSION" != "$TAG_NAME" ]; then
+            echo "Error: Tag '$TAG_NAME' does not match package.json version 'v$PKG_VERSION'" >&2
+            exit 1
+          fi
+          echo "ok=true" >> "$GITHUB_OUTPUT"
+          echo "Tag matches package.json version (v$PKG_VERSION)" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Test
+        run: bun test
+
+      - name: Build executable and archive
+        id: build
+        shell: bash
+        run: |
+          set -euo pipefail
+          bun build src/cli.ts --compile --minify --outfile mdrenum
+          chmod +x mdrenum
+          TARBALL="mdrenum-${{ matrix.os_slug }}-${{ matrix.arch_slug }}.tar.gz"
+          tar -czf "$TARBALL" mdrenum
+          echo "tgz=$TARBALL" >> "$GITHUB_OUTPUT"
+          ls -la "$TARBALL"
+
+      - name: Upload archive to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.build.outputs.tgz }}
+          fail_on_unmatched_files: true
+
+  update-homebrew-tap:
+    name: Update Homebrew tap
+    needs: build-and-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Determine version
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+          PKG_VERSION=$(node -e "console.log(JSON.parse(require('fs').readFileSync('package.json','utf8')).version)")
+          echo "version=$PKG_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Compute shasums for release archives
+        id: shas
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="${{ steps.version.outputs.version }}"
+          BASE="https://github.com/dce/mdrenum/releases/download/v${VERSION}"
+          calc_sha() { curl -Ls "$1" | sha256sum | cut -d ' ' -f1; }
+          LINUX_X64_SHA=$(calc_sha "$BASE/mdrenum-linux-x64.tar.gz")
+          LINUX_ARM64_SHA=$(calc_sha "$BASE/mdrenum-linux-arm64.tar.gz")
+          MACOS_X64_SHA=$(calc_sha "$BASE/mdrenum-macos-x64.tar.gz")
+          MACOS_ARM64_SHA=$(calc_sha "$BASE/mdrenum-macos-arm64.tar.gz")
+          echo "linux_x64=$LINUX_X64_SHA" >> "$GITHUB_OUTPUT"
+          echo "linux_arm64=$LINUX_ARM64_SHA" >> "$GITHUB_OUTPUT"
+          echo "macos_x64=$MACOS_X64_SHA" >> "$GITHUB_OUTPUT"
+          echo "macos_arm64=$MACOS_ARM64_SHA" >> "$GITHUB_OUTPUT"
+          printf "Linux x64: %s\nLinux arm64: %s\nmacOS x64: %s\nmacOS arm64: %s\n" \
+            "$LINUX_X64_SHA" "$LINUX_ARM64_SHA" "$MACOS_X64_SHA" "$MACOS_ARM64_SHA" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Prepare Formula file
+        id: formula
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="${{ steps.version.outputs.version }}"
+          cat > mdrenum.rb <<EOF
+          class Mdrenum < Formula
+            desc "Keep numbered, reference-style Markdown links in sequential order"
+            homepage "https://github.com/dce/mdrenum"
+            version "${VERSION}"
+
+            on_macos do
+              if Hardware::CPU.arm?
+                url "https://github.com/dce/mdrenum/releases/download/v#{version}/mdrenum-macos-arm64.tar.gz"
+                sha256 "${{ steps.shas.outputs.macos_arm64 }}"
+              else
+                url "https://github.com/dce/mdrenum/releases/download/v#{version}/mdrenum-macos-x64.tar.gz"
+                sha256 "${{ steps.shas.outputs.macos_x64 }}"
+              end
+            end
+
+            on_linux do
+              if Hardware::CPU.arm?
+                url "https://github.com/dce/mdrenum/releases/download/v#{version}/mdrenum-linux-arm64.tar.gz"
+                sha256 "${{ steps.shas.outputs.linux_arm64 }}"
+              else
+                url "https://github.com/dce/mdrenum/releases/download/v#{version}/mdrenum-linux-x64.tar.gz"
+                sha256 "${{ steps.shas.outputs.linux_x64 }}"
+              end
+            end
+
+            def install
+              bin.install "mdrenum"
+            end
+
+            test do
+              system "#{bin}/mdrenum", "--version"
+            end
+          end
+          EOF
+          echo "path=$(pwd)/mdrenum.rb" >> "$GITHUB_OUTPUT"
+
+      - name: Push to tap repository
+        env:
+          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          rm -rf tap && mkdir -p tap
+          git clone "https://github.com/dce/homebrew-taps.git" tap
+          mkdir -p tap/Formula
+          cp "${{ steps.formula.outputs.path }}" tap/Formula/mdrenum.rb
+          cd tap
+          git add Formula/mdrenum.rb
+          git commit -m "mdrenum v${{ steps.version.outputs.version }}"
+          git push "https://${HOMEBREW_TAP_TOKEN}@github.com/dce/homebrew-taps.git" HEAD:main

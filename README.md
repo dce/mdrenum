@@ -49,6 +49,7 @@ Arguments:
 Options:
   -s, --stdin  read content from STDIN, write to STDOUT (default: false)
   -f, --fix    update files to put links in sequential order (default: false)
+  -V, --version  output the version number
   -h, --help   display help for command
 ```
 
@@ -66,6 +67,13 @@ Options:
 We use [Bun][1] to compile a standalone executable. The version is specified in `.tool-versions`. Compile the program with `bun run build`. The resulting executable will be `bin/mdrenum`, which you can copy to a directory on `$PATH`.
 
 [1]: https://bun.sh/
+
+## Releases and Versioning
+
+- Version: kept in `package.json` and shown via `mdrenum --version`.
+- CI: GitHub Actions runs tests and a build on pushes and PRs.
+- Release artifacts: pushing a tag like `v0.1.0` triggers four archives uploaded to the GitHub Release: `mdrenum-linux-x64.tar.gz`, `mdrenum-linux-arm64.tar.gz`, `mdrenum-macos-x64.tar.gz`, and `mdrenum-macos-arm64.tar.gz`. Each contains a single `mdrenum` executable.
+- Tag rule: the Git tag must be `v<package.json version>` (e.g., `v0.1.0`). The release workflow will fail if they do not match.
 
 ## Testing
 
