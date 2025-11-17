@@ -1,7 +1,7 @@
 {
   "type": "module",
   "scripts": {
-    "build": "tsc && bun build src/cli.ts --compile --outfile bin/mdrenum"
+    "build": "tsc && bun build src/cli.ts --compile --minify --outfile bin/mdrenum"
   },
   "dependencies": {
     "commander": "^11.1.0",
