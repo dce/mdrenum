@@ -38,6 +38,16 @@ Here's another [link][3].
 [3]: https://link-b.com
 ```
 
+## Installation
+
+- Homebrew (macOS or Linux):
+  - `brew tap dce/taps`
+  - `brew install mdrenum`
+  - Update: `brew upgrade mdrenum`
+- Manual download:
+  - Grab the tarball for your OS/arch from the GitHub Releases.
+  - Extract and move `mdrenum` somewhere on your `PATH` (e.g., `/usr/local/bin`).
+
 ## Usage
 
 ```
