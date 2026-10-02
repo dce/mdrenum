@@ -83,6 +83,7 @@ We use [Bun][1] to compile a standalone executable. The version is specified in 
 - Version: kept in `package.json` and shown via `mdrenum --version`.
 - CI: GitHub Actions runs tests and a build on pushes and PRs.
 - Release artifacts: pushing a tag like `v0.1.0` triggers four archives uploaded to the GitHub Release: `mdrenum-linux-x64.tar.gz`, `mdrenum-linux-arm64.tar.gz`, `mdrenum-macos-x64.tar.gz`, and `mdrenum-macos-arm64.tar.gz`. Each contains a single `mdrenum` executable.
+- Linux x64 releases use Bun's baseline target for CPUs without AVX2. Every release executable is checked for version output and stdin renumbering on a matching OS/architecture before upload.
 - Tag rule: the Git tag must be `v<package.json version>` (e.g., `v0.1.0`). The release workflow will fail if they do not match.
 
 ## Testing

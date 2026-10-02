@@ -17,15 +17,19 @@ jobs:
           - runner: ubuntu-24.04
             os_slug: linux
             arch_slug: x64
-          - runner: ubuntu-24.04
+            bun_target: bun-linux-x64-baseline
+          - runner: ubuntu-24.04-arm
             os_slug: linux
             arch_slug: arm64
+            bun_target: bun-linux-arm64
           - runner: macos-15-intel
             os_slug: macos
             arch_slug: x64
+            bun_target: bun-darwin-x64
           - runner: macos-14
             os_slug: macos
             arch_slug: arm64
+            bun_target: bun-darwin-arm64
     runs-on: ${{ matrix.runner }}
 
     steps:
@@ -64,8 +68,13 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          bun build src/cli.ts --compile --minify --outfile mdrenum
+          bun build src/cli.ts --compile --target=${{ matrix.bun_target }} --minify --outfile mdrenum
           chmod +x mdrenum
+          EXPECTED_VERSION=$(node -p "require('./package.json').version")
+          test "$(./mdrenum --version)" = "$EXPECTED_VERSION"
+          INPUT=$(printf '[Example][9]\n\n[9]: https://example.com\n')
+          EXPECTED=$(printf '[Example][1]\n\n[1]: https://example.com\n')
+          test "$(printf '%s\n' "$INPUT" | ./mdrenum --stdin)" = "$EXPECTED"
           TARBALL="mdrenum-${{ matrix.os_slug }}-${{ matrix.arch_slug }}.tar.gz"
           tar -czf "$TARBALL" mdrenum
           echo "tgz=$TARBALL" >> "$GITHUB_OUTPUT"
