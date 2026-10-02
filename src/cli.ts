@@ -2,7 +2,7 @@ import {Command} from 'commander'
 import {readFileSync, writeFileSync} from 'node:fs'
 import {globSync} from 'glob'
 import {renumberLinks} from './mdrenum.ts'
-import pkg from '../package.json' assert {type: 'json'}
+import pkg from '../package.json' with {type: 'json'}
 
 function processStdin() {
   const content = readFileSync(process.stdin.fd).toString()

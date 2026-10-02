@@ -20,7 +20,7 @@ jobs:
           - runner: ubuntu-24.04
             os_slug: linux
             arch_slug: arm64
-          - runner: macos-13
+          - runner: macos-15-intel
             os_slug: macos
             arch_slug: x64
           - runner: macos-14
